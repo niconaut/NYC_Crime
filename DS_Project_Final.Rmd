@@ -35,6 +35,7 @@ if(!require(rgdal)){install.packages("rgdal");require(rgdal)}
 if(!require(spData)){install.packages("spData");require(spData)}
 if(!require(tigris)){install.packages("tigris");require(tigris)}
 if(!require(shiny)){install.packages("shiny");require(shiny)}
+if(!require(RPostgreSQL)){install.packages("RPostgreSQL");require(RPostgreSQL)}
 ```
 
   Visiting the Big Apple can be a thrilling adventure, but also a potentially dangerous one. Knowing where crime takes place and what to look out for can keep you safe in unfamiliar settings. By doing an exploratory analysis of crime in New York City we learn how to safely navigate all the boroughs and neighborhoods. Using data provided by the NYPD and US government, we examine correlations between a variety of factors such as: types of crime, time, location, and weather. We created an customized map that shades areas of New York City different colors based on its safety using the factors listed above. This product can be utilized by tourists to get a data-driven visual representation of which areas are the safest.
@@ -71,6 +72,26 @@ weather_df <- weather_df[which(as.character(weather_df$DATE) %in% grep("/2015",a
 write.csv(weather_df, "NYC_weather_2_2015.csv", row.names = F, na = "")
 ```
 
+```{r}
+# added to PostgreSQL database after the project was completed so it is only used for storage
+
+dbSafeNames <- function(names) {
+  names <- gsub('[^a-x0-9]+', '_', tolower(names))
+  names <- make.names(names, unique=TRUE, allow_=TRUE)
+  names <- gsub('.','_',names, fixed=TRUE)
+}
+
+colnames(weather_df) <- dbSafeNames(colnames(weather_df))
+
+pg <- dbDriver("PostgreSQL")
+
+driver <- dbDriver("PostgreSQL")
+
+dbconn <- dbConnect(driver,user="niconaut", password="sql",host="localhost",port=5432,dbname="NYCrime")
+
+dbWriteTable(dbconn, 'weather', weather_df, row.names=FALSE)
+```
+
 ### 2.1.2 NYPD Complaint Data
 
   The largest data set was the NYPD Complaint data; because of its size we used a regular expressions to filter the date by the year we wanted. After narrowing it down to one year, the data set was more manageable so we could start a structural analysis. Having to decode the coded column names used by the NYPD took some time, despite the documentation provided. The data set had a lot of columns that were not useful for our analysis. After clearing them out, we were left with a complete data set of only the variables we needed to analyze the time, type, and location of crime. It was fortunate that the data set included the borough the complaint came from, so we did not have to track its location manually and were able to use the column extensively in our analysis.
@@ -80,6 +101,26 @@ complaints_df <- read.csv("NYPD_Complaint_Data_Historic.csv")
 complaints_df <- complaints_df[which(as.character(complaints_df$RPT_DT) %in% grep("/2015",as.character(complaints_df$RPT_DT),value=TRUE)),]
 complaints_df <- complaints_df[,c("CMPLNT_NUM","CMPLNT_FR_DT","RPT_DT","KY_CD","OFNS_DESC","PD_CD","CRM_ATPT_CPTD_CD","LAW_CAT_CD","BORO_NM","ADDR_PCT_CD","LOC_OF_OCCUR_DESC","PREM_TYP_DESC","X_COORD_CD","Y_COORD_CD","Latitude","Longitude")]
 write.csv(complaints_df,"NYPD_Complaint_Data_Historic_2015.csv",row.names=FALSE,na="")
+```
+
+```{r}
+dbSafeNames <- function(names) {
+  names <- gsub('[^a-x0-9]+', '_', tolower(names))
+  names <- make.names(names, unique=TRUE, allow_=TRUE)
+  names <- gsub('.','_',names, fixed=TRUE)
+}
+
+colnames(complaints_df) <- dbSafeNames(colnames(complaints_df))
+
+pg <- dbDriver("PostgreSQL")
+
+driver <- dbDriver("PostgreSQL")
+
+dbconn <- dbConnect(driver,user="niconaut", password="sql",host="localhost",port=5432,dbname="NYCrime")
+
+dbWriteTable(dbconn, 'complaints', complaints_df, row.names=FALSE)
+
+dbExistsTable(dbconn, 'complaints')
 ```
 
 ```{r, echo=F, message=F, warning=F}
@@ -156,6 +197,24 @@ lat_long_neigh_dt <- data.table(lat_long_neigh_unique, key= c("Latitude", "Longi
 dt_neigh_complaints <- merge(nyccrime_merge, lat_long_neigh_dt, by=c("Latitude","Longitude"))
 
 write.csv(dt_neigh_complaints, "dt_with_neighborhoods.csv", row.names = FALSE)
+```
+
+```{r}
+dbSafeNames <- function(names) {
+  names <- gsub('[^a-x0-9]+', '_', tolower(names))
+  names <- make.names(names, unique=TRUE, allow_=TRUE)
+  names <- gsub('.','_',names, fixed=TRUE)
+}
+
+colnames(dt_neigh_complaints) <- dbSafeNames(colnames(dt_neigh_complaints))
+
+pg <- dbDriver("PostgreSQL")
+
+driver <- dbDriver("PostgreSQL")
+
+dbconn <- dbConnect(driver,user="niconaut", password="sql",host="localhost",port=5432,dbname="NYCrime")
+
+dbWriteTable(dbconn, 'neighborhoods', dt_neigh_complaints, row.names=FALSE)
 ```
 
 ### 2.2 Short Comings
