@@ -87,7 +87,7 @@ pg <- dbDriver("PostgreSQL")
 
 driver <- dbDriver("PostgreSQL")
 
-dbconn <- dbConnect(driver,user="niconaut", password="sql",host="localhost",port=5432,dbname="NYCrime")
+dbconn <- dbConnect(driver,user="", password="",host="localhost",port=5432,dbname="NYCrime")
 
 dbWriteTable(dbconn, 'weather', weather_df, row.names=FALSE)
 ```
@@ -116,7 +116,7 @@ pg <- dbDriver("PostgreSQL")
 
 driver <- dbDriver("PostgreSQL")
 
-dbconn <- dbConnect(driver,user="niconaut", password="sql",host="localhost",port=5432,dbname="NYCrime")
+dbconn <- dbConnect(driver,user="", password="",host="localhost",port=5432,dbname="NYCrime")
 
 dbWriteTable(dbconn, 'complaints', complaints_df, row.names=FALSE)
 
@@ -212,7 +212,7 @@ pg <- dbDriver("PostgreSQL")
 
 driver <- dbDriver("PostgreSQL")
 
-dbconn <- dbConnect(driver,user="niconaut", password="sql",host="localhost",port=5432,dbname="NYCrime")
+dbconn <- dbConnect(driver,user="", password="",host="localhost",port=5432,dbname="NYCrime")
 
 dbWriteTable(dbconn, 'neighborhoods', dt_neigh_complaints, row.names=FALSE)
 ```
